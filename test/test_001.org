@@ -1,0 +1,306 @@
+#+TITLE: View Source
+
+ 
+
+* 
+
+* Summary
+
+This document presents the architectural system design for the MIMESIS Image Generation (IG) visual solution. The system is designed to provide high-fidelity visual representations of various sensor outputs from maritime platforms, including surface vessels and submarines. The solution follows a modular approach utilizing Commercial Off-The-Shelf (COTS) components where possible, while adhering to the Common Image Generator Interface (CIGI) 4.0 standard for communication between system components.
+
+The MIMESIS visual solution will support the upgrade of current in-service visual systems such as the Astute Submarine Command Team Trainer (ASCTT) and Maritime Composite Training System (MCTS), as well as future opportunities including Platform Enable Training Capability (PETC), MCTS replacement, Combat System Operator Trainer (CSOT)
+
+** MIMESIS Visual Solution Diagram
+
+[[./View Source_files/MIMESIS-Diagram.png][./View Source_files/MIMESIS-Diagram.png]]
+
+* System Architecture Overview
+
+** High-Level Architecture
+
+The MIMESIS Visual Solution consists of the following primary components:
+
+1. *Image Generator Controller (IGC)*- The simulation computer that manages the overall visual simulation and supplies environmental, platform, and sensor information
+2. *Image Generator (IG)*- COTS component responsible for rendering the visual scene
+3. *Video Distribution System*- For distribution of rendered visuals to training stations
+
+** Key Interfaces
+
+1. *CIGI 4.0 Interface*- Primary interface between the IGC and the IG
+2. *Simulation Controller Interface*- Primary interface between the IGC and Simulation Environment / visuals hardware
+3. *Video Output Interface*- Digital video outputs from IG to training stations
+
+* Component Specifications
+
+** Image Generator Controller (IGC)
+
+The IGC serves as the central simulation computer and data marshaller for the visual system:
+
+- *Functionality*:
+  - Manages simulation state
+  - Coordinates multiple image generation channels
+  - Processes and transmits CIGI protocol messages
+  - Orchestrates entity and environment data
+  - Synchronizes simulation time
+  - Manages communication to visuals hardware
+- *Interfaces*:
+  - CIGI 4.0 output to Image Generator
+  - Network interface to MIMESIS core simulation
+  - Direct communication with hardware visual components
+  - Management interface for configuration
+- *Performance Requirements*:
+  - Support for minimum of two IG channels
+  - Low-latency processing (<20ms)
+  - High-bandwidth network capability (10Gbps)
+
+** Commercial Off-The-Shelf Image Generator (COTS IG)
+
+The COTS IG is responsible for the actual rendering of the visual scene:
+
+- *Functionality*:
+  - Real-time 3D rendering of maritime environments
+  - Multi-spectral rendering capabilities (Optical, IR, LLTV, e.t.c)
+  - Environmental effects processing
+  - Entity visualization
+  - Entity positional interpolation
+  - Physics-based rendering for accurate sensor simulation
+  - Sensor simulation parameter processing
+  - Visual effects specific to sensor types
+  - Integration with MIMESIS sensor simulations
+  - Overlay management for menus, totes, and indicators
+- *Entity Physical effect processing*
+  - Navigation lights
+  - Component articulation (for example, radar rotation)
+  - Transient effects (for example, engine smoke)
+- *Sensor Effects Processing*:
+  - Brightness/contrast/gain adjustment
+  - Polarity controls (Black-Hot, White-Hot)
+  - Field of view management
+  - Orientation control for movable sensors
+- *Overlay System*:
+  - Text rendering
+  - Primitive graphics (lines, polygons)
+  - Predefined symbols (tracker boxes, target symbols)
+  - Menu systems
+- *Rendering Capabilities*:
+  - Optical (B&W and color)
+  - Thermal IR (Short Wave, Medium Wave, Long Wave)
+  - Reflective IR
+  - Multi-spectral and hyper-spectral
+  - Low Light TV (LLTV)
+- *Environmental Effects*:
+  - Time-of-day lighting
+  - Celestial bodies (sun, moon, stars)
+  - Weather conditions (fog, rain, clouds)
+  - Ocean surface dynamics based on weather conditions
+  - Atmospheric effects on sensor visibility
+- *Environmental Interactions*
+  - Transient dynamic effects (for example, shell detonations)
+- *Performance Requirements*:
+  - Real-time rendering at minimum 60 fps
+  - Resolution support up to 4K per channel
+  - Multiple simultaneous render channels
+  - Hardware-accelerated rendering
+
+** Video Distribution System
+
+System for routing rendered visuals to appropriate training stations:
+
+- *Functionality*:
+  - Video stream distribution
+  - Channel management
+  - Quality-of-service monitoring
+- *Interfaces*:
+  - Digital video input from IG
+  - Network video distribution via MIMESIS TV video client
+  - Management interface
+
+* Data Management
+
+** Environment Data
+
+The system will manage and utilize various terrain and environment data formats:
+
+- *Terrain Data*:
+  - Digital Terrain Elevation Data (DTED) Level 0 and 1
+  - OpenFlight terrain data
+  - Shapefile vector data
+  - GeoTIFF imagery
+  - JPEG2000 compressed imagery
+  - CDB-format databases
+- *Entity Models*:
+  - Migration path for existing OpenFlight models
+  - Support for high-fidelity maritime vessel models
+  - Aircraft models with animation support
+- *Environmental Data*:
+  - Ocean surface models
+  - Atmospheric condition models
+  - Time-of-day models
+
+** Data Flow
+
+1. *Environment Setup Flow*:
+  - Database loading and initialization
+  - Terrain and entity model preparation
+  - Environmental conditions configuration
+2. *Real-time Simulation Flow*:
+  - Entity interpolation managed by the IG through the CIGI interface
+  - Entity position/orientation updates
+  - Sensor parameter updates
+  - Environmental changes
+  - Rendering commands
+  - Overlay updates
+
+* Sensor Visualization Capabilities
+
+** Sensor Types
+
+The system supports visualization of the following sensor types:
+
+- *Surface and Submarine Optical Sensors*:
+  - Periscopes (color and B&W modes)
+  - Fixed and movable cameras
+- *Infrared Sensors*:
+  - Short Wave IR (SWIR)
+  - Medium Wave IR (MWIR)
+  - Long Wave IR (LWIR)
+  - Multi-spectral and hyper-spectral
+- *Low Light TV (LLTV) Sensors*:
+  - Night vision capabilities
+  - Enhanced sensitivity modes
+- *Remote Sensors*:
+  - UAV/drone cameras
+  - Helicopter-mounted sensors
+  - Remote platform sensors
+
+** Sensor Effects
+
+The system simulates various sensor effects for training realism:
+
+- *Optical Effects*:
+  - Brightness/contrast
+  - Field of view limitations
+  - Blind arcs from superstructure
+- *IR Effects*:
+  - Thermal signatures based on material properties
+  - Temperature variations based on environmental conditions
+  - Polarity options (White-Hot/Black-Hot)
+- *Environmental Interactions*:
+  - Weather effects on sensor visibility
+  - Sea state effects on sensor/platform stability
+  - Time-of-day lighting effects
+
+* Physical Deployment Architecture
+
+** Hardware Configuration
+
+- *Simulation Servers*:
+  - High-performance computing platforms for IGC/IG
+  - Redundant network connections
+  - Management interfaces
+- *Rendering Nodes*:
+  - GPU-accelerated rendering hardware
+  - High-bandwidth video outputs
+- *Network Infrastructure*:
+  - Low-latency dedicated networks for CIGI traffic
+  - High-bandwidth video distribution network
+  - Management network
+
+** Scalability
+
+The system architecture supports scalability along several dimensions following the general concept of a containerized approach:
+
+- *Channel Expansion*:
+  - Additional rendering channels can be added
+  - Support for distributed rendering
+- *Performance Scaling*:
+  - Hardware upgrades possible without architecture changes
+  - Software optimizations for specific deployment scenarios
+- *Feature Expansion*:
+  - Architecture allows for new sensor types
+  - Additional environmental effects can be integrated
+
+* Integration with MIMESIS Environment
+
+** Core Integration Points
+
+- *Simulation Interface*:
+  - Entity state updates
+  - Environmental condition synchronization
+  - Exercise control commands
+- *Sensor Simulation Interface*:
+  - Parameter updates for sensor types
+  - Sensor positional control
+  - Sensor mode changes
+- *Video Distribution*:
+  - MIMESIS TV video client integration
+
+** Exercise Management
+
+- *Scenario Setup*:
+  - Environment configuration
+  - Entity placement
+  - Initial conditions
+- *Runtime Control*:
+  - Exercise pause/resume
+  - Time acceleration
+  - Condition changes
+  - Event injection
+
+* System Performance
+
+** Key Performance Parameters
+
+- *Rendering Performance*:
+  - Minimum 60 fps per channel
+  - Maximum 20ms latency from simulation update to visual display
+  - Support for multiple simultaneous channels
+- *Visual Fidelity*:
+  - High-resolution rendering
+  - Accurate sensor effects
+  - Realistic environmental representation
+- *Scalability*:
+  - Support for minimum two IG channels, expandable
+  - Ability to handle complex scenes with multiple entities
+  - Able to support any future high polygon entity import
+
+** Failure Modes and Recovery
+
+- *Component Failure Handling*:
+  - Graceful degradation
+  - Automatic recovery where possible
+  - Error logging and reporting
+- *Redundancy Options*:
+  - Critical path component redundancy
+  - Data backup and recovery
+
+* Standards Compliance
+
+- *Interface Standards*:
+  - CIGI 4.0 compliance
+  - Video format standards
+- *Data Standards*:
+  - UK Defence Modelling & Simulation Standards Profile (DMSP)
+  - Terrain data formats (DTED, GeoTIFF, etc.)
+  - Model formats (dependent on which COTS IG is chosen)
+- *Training Standards*:
+  - Visual fidelity requirements for certification?
+
+* Future Expansion
+
+The architecture is designed to support future capabilities:
+
+- *Enhanced Sensor Simulations*:
+  - Additional sensor types
+  - Higher fidelity sensor models
+- *Advanced Environmental Effects*:
+  - Enhanced weather simulation
+  - More detailed ocean surface modeling
+- *Integration with New Training Systems*:
+  - Anything that may come about as part of MIMESIS
+
+
+
+
+ 
+
