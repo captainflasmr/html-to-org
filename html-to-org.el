@@ -69,6 +69,16 @@
       (message "Converted %s to %s" html-file org-file))))
 
 ;;;###autoload
+(defun html-to-org-region (start end)
+  "Convert HTML in region to Org-mode."
+  (interactive "r")
+  (let ((html (buffer-substring-no-properties start end)))
+    (insert (html-to-org-convert (with-temp-buffer
+                                   (insert html)
+                                   (libxml-parse-html-region (point-min) (point-max)))))
+    (org-mode)))
+
+;;;###autoload
 (defun html-to-org-buffer ()
   "Convert HTML in current buffer to Org-mode."
   (interactive)
