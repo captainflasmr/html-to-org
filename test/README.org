@@ -1,0 +1,181 @@
+* Example 1: Mixed Content
+
+** HTML:
+
+#+begin_src html
+<h1>Project Overview</h1>
+<p>Welcome to our exciting new project! Here's what you need to know:</p>
+<h2>Key Features</h2>
+<ul>
+  <li><strong>Responsive Design:</strong> Works on all devices</li>
+  <li><strong>AI Integration:</strong> Leveraging cutting-edge machine learning</li>
+  <li><strong>Cloud-Based:</strong> Accessible from anywhere</li>
+</ul>
+<h2>Getting Started</h2>
+<ol>
+  <li>Sign up for an account at <a href="https://example.com">our website</a></li>
+  <li>Download the app from your device's app store</li>
+  <li>Log in and start exploring!</li>
+</ol>
+<p>For more information, check out our <a href="https://example.com/docs">documentation</a>.</p>
+#+end_src
+
+** Expected Org:
+
+#+begin_src org
+,#+TITLE: Untitled Document
+
+,* Project Overview
+
+Welcome to our exciting new project! Here's what you need to know:
+
+,** Key Features
+
+- *Responsive Design:* Works on all devices
+- *AI Integration:* Leveraging cutting-edge machine learning
+- *Cloud-Based:* Accessible from anywhere
+
+,** Getting Started
+
+1. Sign up for an account at [[https://example.com][our website]]
+2. Download the app from your device's app store
+3. Log in and start exploring!
+
+For more information, check out our [[https://example.com/docs][documentation]].
+#+end_src
+
+* Example 2: Table and Code Block
+
+** HTML:
+
+#+begin_src html
+<h1>Coding Resources</h1>
+<p>Here's a comparison of popular programming languages:</p>
+<table>
+  <tr>
+    <th>Language</th>
+    <th>Type</th>
+    <th>Popular Use Cases</th>
+  </tr>
+  <tr>
+    <td>Python</td>
+    <td>Interpreted</td>
+    <td>Web development, Data science, AI</td>
+  </tr>
+  <tr>
+    <td>JavaScript</td>
+    <td>Interpreted</td>
+    <td>Web development, Server-side (Node.js)</td>
+  </tr>
+  <tr>
+    <td>Java</td>
+    <td>Compiled</td>
+    <td>Enterprise applications, Android development</td>
+  </tr>
+</table>
+<h2>Sample Python Code</h2>
+<pre><code class="language-python">
+def greet(name):
+    return f"Hello, {name}!"
+
+# Example usage
+print(greet("World"))
+</code></pre>
+<p>Try running this code in your Python environment!</p>
+#+end_src
+
+** Expected Org:
+
+#+begin_src org
+,#+TITLE: Untitled Document
+
+,* Coding Resources
+
+Here's a comparison of popular programming languages:
+
+| Language   | Type        | Popular Use Cases                    |
+|------------+-------------+---------------------------------------|
+| Python     | Interpreted | Web development, Data science, AI     |
+| JavaScript | Interpreted | Web development, Server-side (Node.js) |
+| Java       | Compiled    | Enterprise applications, Android development |
+
+,** Sample Python Code
+
+,#+BEGIN_SRC python
+def greet(name):
+    return f"Hello, {name}!"
+
+# Example usage
+print(greet("World"))
+,#+END_SRC
+
+Try running this code in your Python environment!
+#+end_src
+
+* Example 3: Nested Lists and Blockquote
+
+** HTML:
+
+#+begin_src html
+<h1>Travel Guide: European Capitals</h1>
+<p>Explore the rich history and culture of these European capitals:</p>
+<ul>
+  <li>Paris, France
+    <ul>
+      <li>Visit the Eiffel Tower</li>
+      <li>Explore the Louvre Museum</li>
+      <li>Stroll along the Champs-Élysées</li>
+    </ul>
+  </li>
+  <li>Rome, Italy
+    <ul>
+      <li>See the Colosseum</li>
+      <li>Throw a coin in the Trevi Fountain</li>
+      <li>Visit Vatican City</li>
+    </ul>
+  </li>
+  <li>London, UK
+    <ul>
+      <li>Watch the Changing of the Guard at Buckingham Palace</li>
+      <li>Ride the London Eye</li>
+      <li>Explore the British Museum</li>
+    </ul>
+  </li>
+</ul>
+<h2>Travel Tip</h2>
+<blockquote>
+  <p>"The world is a book and those who do not travel read only one page." - Saint Augustine</p>
+</blockquote>
+<p>Remember to always respect local customs and traditions when traveling!</p>
+#+end_src
+
+** Expected Org:
+
+#+begin_src org
+,#+TITLE: Untitled Document
+
+,* Travel Guide: European Capitals
+
+Explore the rich history and culture of these European capitals:
+
+- Paris, France
+  - Visit the Eiffel Tower
+  - Explore the Louvre Museum
+  - Stroll along the Champs-Élysées
+- Rome, Italy
+  - See the Colosseum
+  - Throw a coin in the Trevi Fountain
+  - Visit Vatican City
+- London, UK
+  - Watch the Changing of the Guard at Buckingham Palace
+  - Ride the London Eye
+  - Explore the British Museum
+
+,** Travel Tip
+
+,#+BEGIN_QUOTE
+"The world is a book and those who do not travel read only one page." - Saint Augustine
+,#+END_QUOTE
+
+Remember to always respect local customs and traditions when traveling!
+#+end_src
