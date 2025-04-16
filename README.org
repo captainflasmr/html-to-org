@@ -1,0 +1,11 @@
+#+title: HTML to Org
+#+author: James Dyer
+#+email: captainflasmr@gmail.com
+#+language: en
+#+options: ':t toc:nil author:nil email:nil num:nil title:nil
+#+todo: TODO DOING | DONE
+#+startup: showall
+
+My own implementation of html to org conversion using the DOM
+
+
