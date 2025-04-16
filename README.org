@@ -6,6 +6,35 @@
 #+todo: TODO DOING | DONE
 #+startup: showall
 
-My own implementation of html to org conversion using the DOM
+Provides functionality to convert HTML content to Org-mode format. Here's a brief summary of its key features:
 
+1. Main Functions:
+   - =html-to-org-file=: Converts an HTML file to an Org file.
+   - =html-to-org-buffer=: Converts HTML in the current buffer to Org format.
+   - =html-to-org-convert=: Core function that converts an HTML DOM to Org text.
 
+2. HTML Parsing:
+   - Uses libxml for robust HTML parsing.
+
+3. Conversion Capabilities:
+   - Handles headings (h1-h6)
+   - Converts paragraphs
+   - Processes links and images
+   - Converts both unordered (ul) and ordered (ol) lists
+   - Handles nested lists
+   - Converts tables
+   - Processes pre/code blocks with language detection
+   - Handles blockquotes
+
+4. Inline Formatting:
+   - Converts bold, italic, underline, strike-through, code, and verbatim text
+   - Preserves links within text
+
+5. Special Handling:
+   - Attempts to preserve the structure of complex HTML elements
+   - Handles mixed content (combination of text and HTML elements)
+
+6. Utility Functions:
+   - Several helper functions to process specific HTML elements or structures
+
+This package aims to provide a comprehensive HTML to Org-mode conversion tool, handling various HTML elements and attempting to preserve formatting and structure as much as possible in the resulting Org document.
