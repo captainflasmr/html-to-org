@@ -6,35 +6,104 @@
 #+todo: TODO DOING | DONE
 #+startup: showall
 
-Provides functionality to convert HTML content to Org-mode format. Here's a brief summary of its key features:
+Convert HTML files to Org-mode format in Emacs, with robust support for headings, lists, links, tables, and text formatting.
 
-1. Main Functions:
-   - =html-to-org-file=: Converts an HTML file to an Org file.
-   - =html-to-org-buffer=: Converts HTML in the current buffer to Org format.
-   - =html-to-org-convert=: Core function that converts an HTML DOM to Org text.
+* Features
 
-2. HTML Parsing:
-   - Uses libxml for robust HTML parsing.
+- Convert HTML files to Org-mode files
+- Convert HTML regions to Org-mode format
+- Convert entire buffers from HTML to Org-mode
+- Convert HTML files directly from dired (NEW!)
+- Preserves structure and formatting:
+  - Headers (h1-h6)
+  - Lists (ordered and unordered, including nested)
+  - Links
+  - Tables
+  - Text formatting (bold, italic, underline, etc.)
+  - Code blocks
+  - Block quotes
+  - Images
 
-3. Conversion Capabilities:
-   - Handles headings (h1-h6)
-   - Converts paragraphs
-   - Processes links and images
-   - Converts both unordered (ul) and ordered (ol) lists
-   - Handles nested lists
-   - Converts tables
-   - Processes pre/code blocks with language detection
-   - Handles blockquotes
+* Installation
 
-4. Inline Formatting:
-   - Converts bold, italic, underline, strike-through, code, and verbatim text
-   - Preserves links within text
+** Manual Installation
 
-5. Special Handling:
-   - Attempts to preserve the structure of complex HTML elements
-   - Handles mixed content (combination of text and HTML elements)
+1. Download =html-to-org.el= to your system
+2. Add the following to your Emacs configuration:
 
-6. Utility Functions:
-   - Several helper functions to process specific HTML elements or structures
+#+begin_src elisp
+(add-to-list 'load-path "/path/to/directory-containing-html-to-org")
+(require 'html-to-org)
+#+end_src
 
-This package aims to provide a comprehensive HTML to Org-mode conversion tool, handling various HTML elements and attempting to preserve formatting and structure as much as possible in the resulting Org document.
+** Using use-package with quelpa
+
+#+begin_src elisp
+(use-package html-to-org
+  :quelpa (html-to-org :fetcher github :repo "yourusername/html-to-org"))
+#+end_src
+
+* Usage
+
+** Converting Files
+
+Convert an HTML file to an Org file:
+
+#+begin_src 
+M-x html-to-org-file
+#+end_src
+
+You'll be prompted for the input HTML file and the output Org file.
+
+** Converting Regions
+
+Select a region containing HTML, then:
+
+#+begin_src 
+M-x html-to-org-region
+#+end_src
+
+** Converting Buffers
+
+With an HTML buffer open:
+
+#+begin_src 
+M-x html-to-org-buffer
+#+end_src
+
+** Converting from Dired
+
+In dired, move point to an HTML file, then:
+
+#+begin_src 
+C-c C-o
+#+end_src
+
+or
+
+#+begin_src 
+M-x html-to-org-dired-file
+#+end_src
+
+* Customization
+
+You can customize this package by adding custom converter functions for specific HTML elements. See the source code for examples of how to handle different HTML elements.
+
+* Requirements
+
+- Emacs 25.1 or later
+- libxml2 support in Emacs (usually built-in)
+
+* License
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+* Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (=git checkout -b feature/amazing-feature=)
+3. Commit your changes (=git commit -m 'Add some amazing feature'=)
+4. Push to the branch (=git push origin feature/amazing-feature=)
+5. Open a Pull Request

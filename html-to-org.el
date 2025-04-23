@@ -1,15 +1,29 @@
-;; Test function to demonstrate the conversion with the specific example
-(defun html-to-org-test-example ()
-  "Test the converter with the example HTML."
-  (interactive)
-  (let ((html "<h1>Component Specifications</h1><div class=\"outline-3\"><h2>Image Generator Controller (IGC)</h2><div class=\"outline-text-3\"><p>The IGC serves as the central simulation computer and data marshaller for the visual system:</p><ul class=\"org-ul\"><li><strong>Functionality</strong>:<ul class=\"org-ul\"><li>Manages simulation state</li><li>Coordinates multiple image generation channels</li><li>Processes and transmits CIGI protocol messages</li><li>Orchestrates entity and environment data</li><li>Synchronizes simulation time</li><li>Manages communication to visuals hardware</li></ul></li><li><strong>Interfaces</strong>:<ul class=\"org-ul\"><li>CIGI 4.0 output to Image Generator</li><li>Network interface to MIMESIS core simulation</li><li>Direct communication with hardware visual components</li><li>Management interface for configuration</li></ul></li><li><strong>Performance Requirements</strong>:<ul class=\"org-ul\"><li>Support for minimum of two IG channels</li><li>Low-latency processing (&lt;20ms)</li><li>High-bandwidth network capability (10Gbps)</li></ul></li></ul></div></div><div class=\"outline-3\">"))
-    (with-current-buffer (get-buffer-create "*HTML to Org Test*")
-      (erase-buffer)
-      (insert (html-to-org-convert (with-temp-buffer
-                                     (insert html)
-                                     (libxml-parse-html-region (point-min) (point-max)))))
-      (org-mode)
-      (switch-to-buffer (current-buffer)))))
+;; Copyright (C) 2025 Your Name
+
+;; Author: Your Name <your.email@example.com>
+;; Version: 1.0
+;; Package-Requires: ((emacs "25.1"))
+;; Keywords: html, org, conversion
+;; URL: https://github.com/yourusername/html-to-org
+
+;;; Commentary:
+;; This package provides functions to convert HTML files to Org-mode format
+;; using libxml for robust HTML parsing.  It handles headings, lists, links,
+;; basic formatting, tables, and more.
+;;
+;; Major functionality:
+;; - Convert HTML files to Org-mode
+;; - Convert selected region of HTML to Org-mode
+;; - Convert current buffer from HTML to Org-mode
+;; - Convert HTML file under point in dired to Org-mode
+;;
+;; Usage:
+;; - M-x html-to-org-file            ;; Convert HTML file to Org file
+;; - M-x html-to-org-region          ;; Convert selected HTML region to Org
+;; - M-x html-to-org-buffer          ;; Convert current buffer from HTML to Org
+;; - M-x html-to-org-dired-file      ;; Convert HTML file under point in dired
+
+;;; Code:
 
 ;; Additional helper to properly handle the case where <strong> is followed by text
 (defun html-extract-inline-text (dom)
@@ -24,16 +38,16 @@
         ;; Handle specific formatting tags
         (cond
          ((memq tag '(strong b))
-          (setq result (concat result "*" (string-trim (dom-texts dom)) "*")))
+          (setq result (concat result " *" (string-trim (dom-texts dom)) "* ")))
          
          ((memq tag '(em i))
-          (setq result (concat result "/" (string-trim (dom-texts dom)) "/")))
+          (setq result (concat result " /" (string-trim (dom-texts dom)) "/ ")))
          
          ((memq tag '(u))
-          (setq result (concat result "_" (string-trim (dom-texts dom)) "_")))
+          (setq result (concat result " _" (string-trim (dom-texts dom)) "_ ")))
          
          ((memq tag '(code))
-          (setq result (concat result "~" (string-trim (dom-texts dom)) "~")))
+          (setq result (concat result " ~" (string-trim (dom-texts dom)) "~ ")))
          
          ;; For other tags, process children
          (t
@@ -63,31 +77,92 @@
                                  ".org"))))
   (with-temp-buffer
     (insert-file-contents html-file)
-    (let ((org-content (html-to-org-convert (libxml-parse-html-region (point-min) (point-max)))))
-      (with-temp-file org-file
-        (insert org-content))
-      (message "Converted %s to %s" html-file org-file))))
+    (condition-case err
+        (let ((org-content (html-to-org-convert (libxml-parse-html-region (point-min) (point-max)))))
+          (with-temp-file org-file
+            (insert org-content))
+          (message "Converted %s to %s" html-file org-file))
+      (error 
+       (message "Error converting %s: %s" html-file (error-message-string err))
+       nil))))
 
 ;;;###autoload
 (defun html-to-org-region (start end)
   "Convert HTML in region to Org-mode."
   (interactive "r")
   (let ((html (buffer-substring-no-properties start end)))
-    (insert (html-to-org-convert (with-temp-buffer
-                                   (insert html)
-                                   (libxml-parse-html-region (point-min) (point-max)))))
-    (org-mode)))
+    (condition-case err
+        (progn
+          (delete-region start end)
+          (goto-char start)
+          (insert (html-to-org-convert (with-temp-buffer
+                                         (insert html)
+                                         (libxml-parse-html-region (point-min) (point-max)))))
+          (org-mode))
+      (error
+       (message "Conversion failed: %s" (error-message-string err))))))
 
 ;;;###autoload
 (defun html-to-org-buffer ()
   "Convert HTML in current buffer to Org-mode."
   (interactive)
   (let ((html (buffer-string)))
-    (erase-buffer)
-    (insert (html-to-org-convert (with-temp-buffer
-                                   (insert html)
-                                   (libxml-parse-html-region (point-min) (point-max)))))
-    (org-mode)))
+    (condition-case err
+        (progn
+          (erase-buffer)
+          (insert (html-to-org-convert (with-temp-buffer
+                                         (insert html)
+                                         (libxml-parse-html-region (point-min) (point-max)))))
+          (org-mode))
+      (error
+       (message "Conversion failed: %s" (error-message-string err))))))
+
+;;;###autoload
+(defun html-to-org-dired-file ()
+  "Convert HTML file under point in dired to Org-mode file."
+  (interactive)
+  (unless (eq major-mode 'dired-mode)
+    (user-error "This command only works in dired mode"))
+  
+  (let* ((file (dired-get-filename))
+         (file-ext (file-name-extension file))
+         (org-file (concat (file-name-sans-extension file) ".org")))
+    
+    (unless (and file-ext (string-match-p "html?\\'" file-ext))
+      (user-error "File does not appear to be an HTML file"))
+    
+    (when (file-exists-p org-file)
+      (unless (yes-or-no-p (format "File %s already exists. Overwrite? " org-file))
+        (user-error "Conversion aborted")))
+    
+    (let ((success (html-to-org-file file org-file)))
+      (when success
+        (find-file org-file)))))
+
+;;;###autoload
+(defun html-to-org-url (url)
+  "Convert HTML from URL to Org format."
+  (interactive "sURL to convert: ")
+  (require 'url)
+  (let ((buffer (url-retrieve-synchronously url)))
+    (unless buffer
+      (error "Failed to retrieve URL"))
+    (with-current-buffer buffer
+      (condition-case err
+          (progn
+            (goto-char (point-min))
+            (re-search-forward "^$" nil t) ;; Move past headers
+            (forward-char)
+            (let ((dom (libxml-parse-html-region (point) (point-max)))
+                  (output-buffer (generate-new-buffer (format "*Org: %s*" url))))
+              (with-current-buffer output-buffer
+                (insert (html-to-org-convert dom))
+                (org-mode)
+                (switch-to-buffer output-buffer))
+              (kill-buffer buffer)))
+        (error
+         (message "Conversion failed: %s" (error-message-string err))
+         (kill-buffer buffer))))))
 
 ;;;###autoload
 (defun html-to-org-convert (dom)
@@ -118,10 +193,10 @@
           (let* ((level (+ depth (string-to-number (match-string 1 (symbol-name tag)))))
                  (heading-text (string-trim (dom-texts dom))))
             (setq result (concat result 
-                                (make-string level ?*) 
-                                " " 
-                                heading-text 
-                                "\n\n"))))
+                                 (make-string level ?*) 
+                                 " " 
+                                 heading-text 
+                                 "\n\n"))))
          
          ;; Paragraphs
          ((eq tag 'p)
@@ -142,7 +217,9 @@
           (let ((src (dom-attr dom 'src))
                 (alt (dom-attr dom 'alt)))
             (if src
-                (concat "[[" src "][" (or alt src) "]]")
+                (concat "#+attr_org: :width 600px\n"
+                        "#+attr_html: :width 100%\n"
+                        "[[file:" src "]" (if alt (concat "[" alt "]") "]"))
               "")))
          
          ;; Lists
@@ -159,8 +236,8 @@
             (dolist (child children)
               (when (and (listp child) (eq (dom-tag child) 'li))
                 (setq list-result (concat list-result 
-                                         (html-dom-to-org-list-item child 0 
-                                                                   (format "%d. " counter))))
+                                          (html-dom-to-org-list-item child 0 
+                                                                     (format "%d. " counter))))
                 (setq counter (1+ counter))))
             (setq result (concat result list-result "\n"))))
          
@@ -180,17 +257,17 @@
                     (when (string-match "language-\\([^ ]+\\)" class)
                       (setq language (match-string 1 class)))))))
             (setq result (concat result 
-                                "#+BEGIN_SRC " language "\n" 
-                                code-content 
-                                "#+END_SRC\n\n"))))
+                                 "#+begin_src " language "\n" 
+                                 code-content 
+                                 "#+end_src\n\n"))))
          
          ;; Block quotes
          ((eq tag 'blockquote)
           (let ((quote-text (html-dom-to-org dom (1+ depth))))
             (setq result (concat result 
-                                "#+BEGIN_QUOTE\n" 
-                                quote-text 
-                                "#+END_QUOTE\n\n"))))
+                                 "#+begin_quote\n" 
+                                 quote-text 
+                                 "#+end_quote\n\n"))))
          
          ;; Default: process children
          (t
@@ -248,10 +325,10 @@
     ;; Format the list item with the collected text
     (setq item-text (string-trim item-text))
     (setq result (concat result 
-                        (make-string (* 2 depth) ? ) 
-                        prefix 
-                        item-text 
-                        "\n"))
+                         (make-string (* 2 depth) ? ) 
+                         prefix 
+                         item-text 
+                         "\n"))
     
     ;; Add any sublists
     (when has-sublist
@@ -266,10 +343,10 @@
       (dolist (child (dom-children dom))
         (when (and (listp child) (eq (dom-tag child) 'li))
           (let ((item-prefix (if (stringp prefix) 
-                                prefix 
-                              (funcall prefix counter))))
+                                 prefix 
+                               (funcall prefix counter))))
             (setq result (concat result 
-                                (html-dom-to-org-list-item child depth item-prefix)))
+                                 (html-dom-to-org-list-item child depth item-prefix)))
             (setq counter (1+ counter))))))
     result))
 
@@ -291,15 +368,15 @@
           (cond
            ;; Bold
            ((memq tag '(b strong))
-            (setq result (concat result "*" content "*")))
+            (setq result (concat result " *" content "* ")))
            
            ;; Italic
            ((memq tag '(i em))
-            (setq result (concat result "/" content "/")))
+            (setq result (concat result " /" content "/ ")))
            
            ;; Underline
            ((eq tag 'u)
-            (setq result (concat result "_" content "_")))
+            (setq result (concat result " _" content "_ ")))
            
            ;; Strike-through
            ((memq tag '(s strike del))
@@ -307,17 +384,17 @@
            
            ;; Code
            ((memq tag '(code tt kbd))
-            (setq result (concat result "~" content "~")))
+            (setq result (concat result " ~" content "~ ")))
            
            ;; Verbatim
            ((eq tag 'samp)
-            (setq result (concat result "=" content "=")))
+            (setq result (concat result " =" content "= ")))
            
            ;; Links
            ((eq tag 'a)
             (let ((href (dom-attr child 'href)))
               (if href
-                  (setq result (concat result "[[" href "][" content "]]"))
+                  (setq result (concat result " [[" href "][" content "]] "))
                 (setq result (concat result content)))))
            
            ;; Breaks
@@ -329,7 +406,10 @@
             (let ((src (dom-attr child 'src))
                   (alt (dom-attr child 'alt)))
               (if src
-                  (setq result (concat result "[[" src "][" (or alt src) "]]"))
+                  (setq result (concat
+                                "#+attr_org: :width 600px\n"
+                                "#+attr_html: :width 100%\n"
+                                "[[file:" src "]" (if alt (concat "[" alt "]") "]")))
                 (setq result result))))
            
            ;; Span (pass through)
@@ -367,28 +447,193 @@
 
 (defun html-table-to-org (dom)
   "Convert HTML table DOM to Org table format."
-  (let ((result "|")
+  (let ((rows (dom-by-tag dom 'tr))
         (has-header nil)
-        (rows (dom-by-tag dom 'tr)))
-    
-    ;; Check if we have a header row (th elements)
+        (org-lines '()))
+
+    ;; Check if the first row is a header
     (when (and rows (dom-by-tag (car rows) 'th))
       (setq has-header t))
-    
-    ;; Process rows
+
+    ;; Convert each row to an org table row
     (dolist (row rows)
-      (let ((cells (append (dom-by-tag row 'th) (dom-by-tag row 'td))))
+      (let ((cells (append (dom-by-tag row 'th) (dom-by-tag row 'td)))
+            (line "|"))
         (dolist (cell cells)
-          (setq result (concat result " " (string-trim (dom-texts cell)) " |")))
-        (setq result (concat result "\n|"))))
-    
-    ;; Add separator after header if needed
+          (setq line (concat line " " (string-trim (dom-texts cell)) " |")))
+        (push line org-lines)))
+
+    (setq org-lines (nreverse org-lines)) ;; restore original order
+
+    ;; Insert header separator if needed
     (when has-header
-      (let ((separator (concat "\n|-" (make-string (- (length (car (split-string result "\n"))) 3) ?-) "-|\n|")))
-        (setq result (replace-regexp-in-string "\n|" separator result 1))))
+      (let* ((header (car org-lines))
+             (columns (length (split-string header "|")))
+             (separator (concat "|"
+                                (mapconcat (lambda (_) "---") (make-list (- columns 2) nil) "+")
+                                "|")))
+        (setq org-lines (append (list (car org-lines) separator) (cdr org-lines)))))
+
+    ;; Join lines into a single string
+    (mapconcat 'identity org-lines "\n")))
+
+(defun html-to-org-direct-conversion (html-string)
+  "Directly convert HTML-STRING to Org format without using DOM functions."
+  (with-temp-buffer
+    (insert html-string)
     
-    ;; Clean up trailing "|"
-    (string-trim-right result "|\n")))
+    ;; Basic conversion of HTML tags to Org format
+    ;; Headers
+    (goto-char (point-min))
+    (while (re-search-forward "<h1>\\(.*?\\)</h1>" nil t)
+      (replace-match "* \\1\n\n"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<h2>\\(.*?\\)</h2>" nil t)
+      (replace-match "** \\1\n\n"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<h3>\\(.*?\\)</h3>" nil t)
+      (replace-match "*** \\1\n\n"))
+    
+    ;; Strong/Bold
+    (goto-char (point-min))
+    (while (re-search-forward "<strong>\\(.*?\\)</strong>" nil t)
+      (replace-match "*\\1*"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<b>\\(.*?\\)</b>" nil t)
+      (replace-match "*\\1*"))
+    
+    ;; Italic
+    (goto-char (point-min))
+    (while (re-search-forward "<em>\\(.*?\\)</em>" nil t)
+      (replace-match "/\\1/"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<i>\\(.*?\\)</i>" nil t)
+      (replace-match "/\\1/"))
+    
+    ;; Paragraphs
+    (goto-char (point-min))
+    (while (re-search-forward "<p>\\(.*?\\)</p>" nil t)
+      (replace-match "\\1\n\n"))
+    
+    ;; Lists
+    (goto-char (point-min))
+    (while (re-search-forward "<ul[^>]*>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "</ul>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<ol[^>]*>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "</ol>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<li>\\(.*?\\)</li>" nil t)
+      (replace-match "- \\1\n"))
+    
+    ;; Links
+    (goto-char (point-min))
+    (while (re-search-forward "<a href=\"\\(.*?\\)\">\\(.*?\\)</a>" nil t)
+      (replace-match "[[\\1][\\2]]"))
+    
+    ;; Images
+    (goto-char (point-min))
+    (while (re-search-forward "<img src=\"\\(.*?\\)\".*?alt=\"\\(.*?\\)\".*?>" nil t)
+      (replace-match "[[\\1][\\2]]"))
+    
+    ;; Table tags (simple handling)
+    (goto-char (point-min))
+    (while (re-search-forward "<table[^>]*>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "</table>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<tr[^>]*>" nil t)
+      (replace-match "|"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "</tr>" nil t)
+      (replace-match "|\n"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<th[^>]*>\\(.*?\\)</th>" nil t)
+      (replace-match " *\\1* |"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<td[^>]*>\\(.*?\\)</td>" nil t)
+      (replace-match " \\1 |"))
+    
+    ;; Remove div tags
+    (goto-char (point-min))
+    (while (re-search-forward "<div[^>]*>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "</div>" nil t)
+      (replace-match ""))
+    
+    ;; Remove span tags
+    (goto-char (point-min))
+    (while (re-search-forward "<span[^>]*>" nil t)
+      (replace-match ""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "</span>" nil t)
+      (replace-match ""))
+    
+    ;; Line breaks
+    (goto-char (point-min))
+    (while (re-search-forward "<br\\s-*/>" nil t)
+      (replace-match "\n"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "<br>" nil t)
+      (replace-match "\n"))
+    
+    ;; Remove remaining HTML tags
+    (goto-char (point-min))
+    (while (re-search-forward "<[^>]*>" nil t)
+      (replace-match ""))
+    
+    ;; Clean up whitespace
+    (goto-char (point-min))
+    (while (re-search-forward "\n\n\n+" nil t)
+      (replace-match "\n\n"))
+    
+    ;; Clean up HTML entities
+    (goto-char (point-min))
+    (while (re-search-forward "&amp;" nil t)
+      (replace-match "&"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "&lt;" nil t)
+      (replace-match "<"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "&gt;" nil t)
+      (replace-match ">"))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "&quot;" nil t)
+      (replace-match "\""))
+    
+    (goto-char (point-min))
+    (while (re-search-forward "&nbsp;" nil t)
+      (replace-match " "))
+    
+    (buffer-string)))
 
 (provide 'html-to-org)
 ;;; html-to-org.el ends here
