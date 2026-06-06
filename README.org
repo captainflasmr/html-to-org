@@ -65,7 +65,7 @@ M-x html-to-org-region
 
 ** Converting Buffers
 
-With an HTML buffer open:
+      With an HTML buffer open:
 
 #+begin_src 
 M-x html-to-org-buffer
